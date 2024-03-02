@@ -10,29 +10,32 @@ import kotlinx.coroutines.flow.flow
 import java.io.IOException
 
 class ProductsRepositoryImpl(
-    private val api : Api
-) : ProductsRepository{
+    private val api: Api
+): ProductsRepository {
+
     @RequiresExtension(extension = Build.VERSION_CODES.S, version = 7)
-    override suspend fun getProjectsList(): Flow<Result<List<Product>>> {
+    override suspend fun getProductsList(): Flow<Result<List<Product>>> {
         return flow {
-            val productsFromApi  = try {
+            val productsFromApi = try {
                 api.getProductsList()
-            } catch (e : IOException){
+
+            } catch (e: IOException) {
                 e.printStackTrace()
-                emit(Result.Error(message ="Error loading products"))
+                emit(Result.Error(message = "Error loading products"))
+                return@flow
+            } catch (e: HttpException) {
+                e.printStackTrace()
+                emit(Result.Error(message = "Error loading products"))
+                return@flow
+            }  catch (e: Exception) {
+                e.printStackTrace()
+                emit(Result.Error(message = "Error loading products"))
                 return@flow
             }
-            catch (e : HttpException){
-                e.printStackTrace()
-                emit(Result.Error(message ="Error loading products"))
-                return@flow
-            }
-            catch (e : Exception){
-                e.printStackTrace()
-                emit(Result.Error(message ="Error loading products"))
-                return@flow
-            }
+
             emit(Result.Success(productsFromApi.products))
         }
+
     }
+
 }
